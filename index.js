@@ -1,9 +1,17 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { registerValidation, loginValidation, postCreateValidation } from './validations/validations.js';
+import {
+    registerValidation,
+    loginValidation,
+    postCreateValidation,
+    postCreateCompanyValidation
+} from './validations/validations.js';
 import checkAuth from './utils/chechAuth.js';
+import cors from 'cors';
 
-let cors = require ( 'cors' );
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './swagger-output.json' assert { type: "json" };
+
 let corsOptions = {
     methods: ['OPTIONS,GET,POST,PUT,DELETE'],
     credentials: true,
@@ -12,11 +20,10 @@ let corsOptions = {
     allowedHeaders: ['Content-Type,Access-Control-Allow-Headers,Authorization,X-Requested-With'],
     optionsSuccessStatus: 200
 }
-app.use(cors(corsOptions))
-
 
 import * as UserController from './controllers/UserController.js';
 import * as NewsController from './controllers/NewsController.js';
+import * as CompanyController from "./controllers/CompanyController.js";
 
 mongoose
     .connect('mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority')
@@ -24,21 +31,27 @@ mongoose
     .catch((err) => console.log('DB err', err))
 
 const app = express();
+app.use(cors(corsOptions))
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Hellow World!');
+    res.send('Hello World!');
 })
 
 app.post('/auth/login', loginValidation, UserController.login);
 app.post('/auth/register', registerValidation, UserController.register);
 app.get('/auth/me', checkAuth, UserController.getMe);
 
-//app.get('/posts', NewsController.getAll);
-//app.get('/posts/:id', PostController.getOne);
-app.post('/posts', checkAuth, postCreateValidation, NewsController.create);
-//app.delete('/posts', PostController.remove);
+app.get('/posts', NewsController.getAll);
+app.get('/posts/:id', NewsController.getOne);
+app.post('/posts', postCreateValidation, NewsController.create);
 
+
+app.get('/companies',  CompanyController.getAllCompanies);
+app.get('/companies/:id',  CompanyController.getOneCompany);
+app.post('/companies', postCreateCompanyValidation, CompanyController.createCompany);
+app.use('/api-docs', swaggerUi.serve)
+app.get('/api-docs', swaggerUi.setup(swaggerDocument))
 app.listen(4444, (error) => {
     if (error) {
         return console.log(error);

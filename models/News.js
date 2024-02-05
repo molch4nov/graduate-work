@@ -9,6 +9,10 @@ const NewsSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    shortContent: {
+        type: String,
+        required: true,
+    },
     date: {
         type: String,
         required: true,
