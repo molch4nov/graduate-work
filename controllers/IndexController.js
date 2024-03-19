@@ -48,3 +48,32 @@ export const create = async (req, res) => {
         })
     }
 }
+
+export const getYear = async (req, res) => {
+    try {
+        const record
+            = await GeneralIndex.aggregate([
+            { $group: { _id: null, uniqueYears: { $addToSet: 'year' } } },
+        ], (err, result) => {
+            if (err) {
+                console.error('Ошибка при выполнении запроса:', err);
+            } else {
+                const uniqueYears = result[0].uniqueYears;
+                console.log('Уникальные года в коллекции:', uniqueYears);
+            }
+        });
+        if (!record) {
+            return res.status(404).json({
+                message: 'Индекс не найден или не существует.'
+            })
+        }
+
+        res.json(record);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось создать запись об индексе.',
+        })
+    }
+}

@@ -25,7 +25,7 @@ import * as UserController from './controllers/UserController.js';
 import * as NewsController from './controllers/NewsController.js';
 import * as CompanyController from "./controllers/CompanyController.js";
 import * as IndexController from "./controllers/IndexController.js";
-import {create} from "./controllers/IndexController.js";
+import {create, getYear} from "./controllers/IndexController.js";
 
 mongoose
     .connect('mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority')
@@ -55,6 +55,8 @@ app.post('/companies', postCreateCompanyValidation, CompanyController.createComp
 
 app.get('/index/:year/:quarter', IndexController.getSeparateIndex);
 app.post('/index/:year/:quarter', IndexController.create);
+
+app.get('/years', IndexController.getYear)
 
 
 app.use('/api-docs', swaggerUi.serve)
