@@ -24,6 +24,8 @@ let corsOptions = {
 import * as UserController from './controllers/UserController.js';
 import * as NewsController from './controllers/NewsController.js';
 import * as CompanyController from "./controllers/CompanyController.js";
+import * as IndexController from "./controllers/IndexController.js";
+import {create} from "./controllers/IndexController.js";
 
 mongoose
     .connect('mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority')
@@ -50,6 +52,11 @@ app.post('/posts', postCreateValidation, NewsController.create);
 app.get('/companies',  CompanyController.getAllCompanies);
 app.get('/companies/:id',  CompanyController.getOneCompany);
 app.post('/companies', postCreateCompanyValidation, CompanyController.createCompany);
+
+app.get('/index/:year/:quarter', IndexController.getSeparateIndex);
+app.post('/index/:year/:quarter', IndexController.create);
+
+
 app.use('/api-docs', swaggerUi.serve)
 app.get('/api-docs', swaggerUi.setup(swaggerDocument))
 app.listen(4444, (error) => {

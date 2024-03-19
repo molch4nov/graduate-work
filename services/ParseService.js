@@ -1,5 +1,6 @@
 import XLSX from 'xlsx'
 import * as fs from "fs";
+import {login} from "../controllers/UserController.js";
 
 const selectedFields = ['Регион',
     'Отрасль',
@@ -123,12 +124,10 @@ export const calcJointIndex = (answers, quarterPast = 4, quarterFuture = 1, year
     ];
 }
 
-export const calcSeparateIndex = (answers,  future,  quarter = 4, quarterPast = 4, quarterFuture = 1,  year = 2024) => {
+export const calcSeparateIndex = (answers, quarter = 1,  year = 2024) => {
     const OptimismBlock = (a) => {
         return (a === 1 ? 2 : (a === 2 ? 1 : 0)) * 0.5;
     }
-
-    let valueIndex = future ? [2, 4, 6] : [1, 3, 5];
 
     let revenueIndexes = [];
     let sizeIndexes = [];
@@ -143,38 +142,38 @@ export const calcSeparateIndex = (answers,  future,  quarter = 4, quarterPast = 
     let innovationJoin = 0;
 
     answers.forEach(item => {
-        const revenue = OptimismBlock(item[`Q${valueIndex[0]}` + ': Выручка в ' + `${quarter}` +' квартале']);
+        // console.log(item)
+        const revenue = OptimismBlock(item['Q1: Выручка']);
 
-        const size = OptimismBlock(item[`Q${valueIndex[1]}` + ': Занятых в ' + `${quarter}` +' квартале']);
+        const size = OptimismBlock(item['Q2: Занятых']);
 
-        const finance = OptimismBlock(item[`Q${valueIndex[2]}` + ': Затраты на развитие в ' + `${quarter}` + ' квартале']);
+        const finance = OptimismBlock(item['Q3: Затраты']);
 
-        const investment = Optimism(item['Q7: Кредиты']);
-        const innovation = Optimism(item['Q8: Разработка новых продуктов']);
+        const investment = Optimism(item['Q4: Кредиты']);
+        const innovation = Optimism(item['Q5: Разработка новых продуктов']);
 
 
-        const answerRevenue = votedBlock(
-            item['Q1: Выручка в ' + `${quarterPast}` +' квартале'],
-            item['Q2: Выручка в ' + `${quarterFuture}` +' квартале']
+        const answerRevenue = voted(
+            item['Q1: Выручка']
         );
 
-        const answerSize = votedBlock(
-            item['Q3: Занятых в ' + `${quarterPast}` +' квартале'],
-            item['Q4: Занятых в ' + `${quarterFuture}` +' квартале']
+        const answerSize = voted(
+            item['Q2: Занятых']
         );
 
-        const answerFinance = votedBlock(
-            item['Q5: Затраты на развитие в ' + `${quarterPast}` + ' квартале'],
-            item['Q6: Затраты на развитие в ' + `${quarterFuture}` + ' квартале']
+        const answerFinance = voted(
+            item['Q3: Затраты']
         );
 
         const answerInvestment = voted(
-            item['Q7: Кредиты']
+            item['Q4: Кредиты']
         );
 
         const answerInnovation = voted(
-            item['Q8: Разработка новых продуктов']
+            item['Q5: Разработка новых продуктов']
         );
+
+         console.log(revenue, ',', size, ',', finance, ',', investment, ',', innovation)
 
         revenueIndexes.push(revenue);
         sizeIndexes.push(size);
@@ -207,23 +206,15 @@ export const calcSeparateIndex = (answers,  future,  quarter = 4, quarterPast = 
 }
 
 
-export const parseFile = (filename = '../docs/index.xlsx') => {
+export const parseFile = (filename = '../docs/1 квартал 2024 год.xlsx') => {
     const workbook = XLSX.readFile(filename);
     const sheet_name_list = workbook.SheetNames;
-
-    const answers = XLSX.utils.sheet_to_json(workbook.Sheets['answers']).map(obj => {
-        const newObj = {};
-        selectedFields.forEach(field => {
-            newObj[field] = obj[field];
-        });
-        return newObj;
-    });
-
+    const answers = XLSX.utils.sheet_to_json(workbook.Sheets['Лист1']);
     // console.log(calcJointIndex(answers.slice(0, -2)));
     // console.log(calcSeparateIndex(answers.slice(0, -2), false, 4));
-    console.log(calcSeparateIndex(answers.slice(0, -2), true, 1));
+    // console.log(calcSeparateIndex(answers.slice(0, -2), true, 1));
 
-    fs.writeFileSync('./target.json', JSON.stringify(answers.slice(0 , -2)))
+    fs.writeFileSync('./target.json', JSON.stringify(calcSeparateIndex(answers, 1, 2024)))
 }
 
 parseFile();
