@@ -23,6 +23,17 @@ export const getSeparateIndex = async (req, res) => {
     }
 }
 
+export const getJointIndex = async (req, res) => {
+    try {
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить индекс'
+        })
+    }
+}
+
 export const create = async (req, res) => {
     try {
         const year = req.params.year;

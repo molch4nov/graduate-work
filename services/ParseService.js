@@ -206,15 +206,16 @@ export const calcSeparateIndex = (answers, quarter = 1,  year = 2024) => {
 }
 
 
-export const parseFile = (filename = '../docs/1 квартал 2024 год.xlsx') => {
+export const parseFile = (filename = '../docs/answers.xlsx') => {
     const workbook = XLSX.readFile(filename);
     const sheet_name_list = workbook.SheetNames;
-    const answers = XLSX.utils.sheet_to_json(workbook.Sheets['Лист1']);
-    // console.log(calcJointIndex(answers.slice(0, -2)));
+    const answers = XLSX.utils.sheet_to_json(workbook.Sheets['answers']);
+    console.log(answers)
+    console.log(calcJointIndex(answers.slice(0, -2)));
     // console.log(calcSeparateIndex(answers.slice(0, -2), false, 4));
     // console.log(calcSeparateIndex(answers.slice(0, -2), true, 1));
 
-    fs.writeFileSync('./target.json', JSON.stringify(calcSeparateIndex(answers, 1, 2024)))
+    fs.writeFileSync('./target.json', JSON.stringify(calcJointIndex(answers)))
 }
 
 parseFile();
