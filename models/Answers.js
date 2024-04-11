@@ -13,15 +13,23 @@ const AnswersScheme = new mongoose.Schema({
             type: Number,
             required: true,
         },
-        investment: {
+        q1: {
             type: Number,
             required: true,
         },
-        innovation: {
+        q2: {
             type: Number,
             required: true,
         },
-        summaryIndex: {
+        q3: {
+            type: Number,
+            required: true,
+        },
+        q4: {
+            type: Number,
+            required: true,
+        },
+        q5: {
             type: Number,
             required: true,
         },

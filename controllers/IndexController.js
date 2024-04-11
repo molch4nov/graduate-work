@@ -1,31 +1,278 @@
 import GeneralIndex from "../models/GeneralIndex.js";
-import NewsModel from "../models/News.js";
+import AnswersScheme from "../models/Answers.js";
+import fs from "fs";
 
-export const getSeparateIndex = async (req, res) => {
+// export const getSeparateIndex = async (req, res) => {
+//     try {
+//         const year = req.params.year;
+//         const quarter = req.params.quarter;
+//         const record = await GeneralIndex.find({year: year, quarter: quarter});
+//
+//         if (!record) {
+//             return res.status(404).json({
+//                 message: 'Индекс не найден или не существует.'
+//             })
+//         }
+//
+//         res.json(record);
+//
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).json({
+//             message: 'Не удалось получить индекс'
+//         })
+//     }
+// }
+
+const getSummaryIndex = (a) => {
+    let answer = 0;
+    a.forEach(item => {
+        answer += item;
+    })
+    return answer;
+}
+
+function takeIndex(a, b) {
+    return getSummaryIndex(a) / b * 100
+}
+
+function calculateJointIndex(leftRecord, rightRecord) {
+    const OptimismBlock = (a, b) => {
+        return ((a === 1 ? 2 : (a === 2 ? 1 : 0)) + (b === 1 ? 2 : (b === 2 ? 1 : 0))) * 0.25;
+    }
+
+    const Optimism = (a) => {return a > 4 ? 0 : a > 2 ? 0.5 : 1};
+    const votedBlock  = (a, b) => {return (a === 99 || b === 99) ? 0 : 1};
+    const voted  = (a) => {return a === 99 ? 0 : 1};
+
+    let revenueIndexes = [];
+    let sizeIndexes = [];
+    let financeIndexes = [];
+    let investmentIndexes = [];
+    let innovationIndexes = [];
+
+    let revenueJoin = 0;
+    let sizeJoin = 0;
+    let financeJoin = 0;
+    let investmentJoin = 0;
+    let innovationJoin = 0;
+
+
+    const recordSize = leftRecord.length;
+
+    for (let i = 0; i < recordSize; i++) {
+        const revenue = OptimismBlock(leftRecord[i].q1, rightRecord[i].q1);
+
+        const size = OptimismBlock(leftRecord[i].q2, rightRecord[i].q2);
+
+        const finance = OptimismBlock(leftRecord[i].q3, rightRecord[i].q3);
+
+        const investment = Optimism(leftRecord[i].q4);
+        const innovation = Optimism(leftRecord[i].q5);
+
+
+
+        const answerRevenue = votedBlock(
+            leftRecord[i].q1, rightRecord[i].q1
+        );
+
+        const answerSize = votedBlock(leftRecord[i].q2, rightRecord[i].q2);
+
+        const answerFinance = votedBlock(leftRecord[i].q3, rightRecord[i].q3);
+
+        const answerInvestment = voted(leftRecord[i].q4);
+
+        const answerInnovation = voted(leftRecord[i].q5);
+
+        revenueIndexes.push(revenue);
+        sizeIndexes.push(size);
+        financeIndexes.push(finance);
+        investmentIndexes.push(investment);
+        innovationIndexes.push(innovation);
+
+        revenueJoin += answerRevenue;
+        sizeJoin += answerSize;
+        financeJoin += answerFinance;
+        investmentJoin += answerInvestment;
+        innovationJoin += answerInnovation;
+    }
+
+    const index = (
+        takeIndex(revenueIndexes, revenueJoin)
+        + takeIndex(sizeIndexes,sizeJoin)
+        + takeIndex(financeIndexes,financeJoin)
+        + takeIndex(investmentIndexes,  investmentJoin)
+        + takeIndex(innovationIndexes, innovationJoin)
+    ) / (5);
+    return {revenue: takeIndex(revenueIndexes, revenueJoin),
+        size: takeIndex(sizeIndexes,sizeJoin),
+        finance: takeIndex(financeIndexes,financeJoin),
+        investment: takeIndex(investmentIndexes,  investmentJoin),
+        innovation: takeIndex(innovationIndexes, innovationJoin),
+        index: index
+    };
+}
+
+export const getJointIndex = async (req, res) => {
     try {
-        const year = req.params.year;
-        const quarter = req.params.quarter;
-        const record = await GeneralIndex.find({year: year, quarter: quarter});
-
-        if (!record) {
-            return res.status(404).json({
-                message: 'Индекс не найден или не существует.'
-            })
+        let leftYear = Number(req.params.year);
+        let leftQuarter = Number(req.params.quarter);
+        let rightYear = 0;
+        let rightQuarter = 0;
+        if (leftQuarter === 4) {
+            rightYear = leftYear + 1;
+            rightQuarter = 1;
+        } else {
+            rightYear = leftYear;
+            rightQuarter = leftQuarter + 1;
         }
 
-        res.json(record);
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
 
-    } catch (err) {
-        console.log(err);
+        const result = calculateJointIndex(leftRecord, rightRecord);
+
+        res.status(200).json(result);
+    } catch (error) {
+        console.log(error);
         res.status(500).json({
             message: 'Не удалось получить индекс'
         })
     }
 }
 
-export const getJointIndex = async (req, res) => {
+function calculateSeparateIndex(leftRecord, rightRecord) {
+    const OptimismBlock = (a, b) => {
+        return ((a === 1 ? 2 : (a === 2 ? 1 : 0)) + (b === 1 ? 2 : (b === 2 ? 1 : 0))) * 0.25;
+    }
+
+    const OptimismSeparateBlock = (a) => (a === 1) ? 2 * 0.5 : (a === 2) ? 0.5 : 0;
+
+
+    const Optimism = (a) => {return a > 4 ? 0 : a > 2 ? 0.5 : 1};
+    const votedBlock  = (a, b) => {return (a === 99 || b === 99) ? 0 : 1};
+    const voted  = (a) => {return a === 99 ? 0 : 1};
+
+    let revenueIndexes = [];
+    let sizeIndexes = [];
+    let financeIndexes = [];
+    let investmentIndexes = [];
+    let innovationIndexes = [];
+
+    let revenueJoin = 0;
+    let sizeJoin = 0;
+    let financeJoin = 0;
+    let investmentJoin = 0;
+    let innovationJoin = 0;
+
+
+    const recordSize = leftRecord.length;
+
+    for (let i = 0; i < recordSize; i++) {
+        const revenue = OptimismSeparateBlock(leftRecord[i].q1);
+
+        const size = OptimismSeparateBlock(leftRecord[i].q2);
+
+        const finance = OptimismSeparateBlock(leftRecord[i].q3);
+
+        const investment = Optimism(leftRecord[i].q4);
+        const innovation = Optimism(leftRecord[i].q5);
+
+
+
+        const answerRevenue = votedBlock(
+            leftRecord[i].q1, rightRecord[i].q1
+        );
+
+        const answerSize = votedBlock(leftRecord[i].q2, rightRecord[i].q2);
+
+        const answerFinance = votedBlock(leftRecord[i].q3, rightRecord[i].q3);
+
+        const answerInvestment = voted(leftRecord[i].q4);
+
+        const answerInnovation = voted(leftRecord[i].q5);
+
+        revenueIndexes.push(revenue);
+        sizeIndexes.push(size);
+        financeIndexes.push(finance);
+        investmentIndexes.push(investment);
+        innovationIndexes.push(innovation);
+
+        revenueJoin += answerRevenue;
+        sizeJoin += answerSize;
+        financeJoin += answerFinance;
+        investmentJoin += answerInvestment;
+        innovationJoin += answerInnovation;
+    }
+
+    const index = (
+        takeIndex(revenueIndexes, revenueJoin)
+        + takeIndex(sizeIndexes,sizeJoin)
+        + takeIndex(financeIndexes,financeJoin)
+        + takeIndex(investmentIndexes,  investmentJoin)
+        + takeIndex(innovationIndexes, innovationJoin)
+    ) / (5);
+    return {revenue: takeIndex(revenueIndexes, revenueJoin),
+        size: takeIndex(sizeIndexes,sizeJoin),
+        finance: takeIndex(financeIndexes,financeJoin),
+        investment: takeIndex(investmentIndexes,  investmentJoin),
+        innovation: takeIndex(innovationIndexes, innovationJoin),
+        index: index
+    };
+
+
+}
+
+export const getSeparateIndex = async (req, res) => {
     try {
-        
+        let leftYear = Number(req.params.year);
+        let leftQuarter = Number(req.params.quarter);
+        let rightYear = 0;
+        let rightQuarter = 0;
+        if (leftQuarter === 4) {
+            rightYear = leftYear + 1;
+            rightQuarter = 1;
+        } else {
+            rightYear = leftYear;
+            rightQuarter = leftQuarter + 1;
+        }
+
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
+
+        const leftResult = calculateSeparateIndex(leftRecord, rightRecord);
+        const rightResult = calculateSeparateIndex(rightRecord, leftRecord);
+
+        res.status(200).json({left: leftResult, right: rightResult});
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить индекс'
+        })
+    }
+}
+
+export const getSeparateIndex = async (req, res) => {
+    try {
+        let leftYear = Number(req.params.year);
+        let leftQuarter = Number(req.params.quarter);
+        let rightYear = 0;
+        let rightQuarter = 0;
+        if (leftQuarter === 4) {
+            rightYear = leftYear + 1;
+            rightQuarter = 1;
+        } else {
+            rightYear = leftYear;
+            rightQuarter = leftQuarter + 1;
+        }
+
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
+
+        const leftResult = calculateSeparateIndex(leftRecord, rightRecord);
+        const rightResult = calculateSeparateIndex(rightRecord, leftRecord);
+
+        res.status(200).json({left: leftResult, right: rightResult});
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -59,6 +306,8 @@ export const create = async (req, res) => {
         })
     }
 }
+
+
 
 export const getYear = async (req, res) => {
     try {
