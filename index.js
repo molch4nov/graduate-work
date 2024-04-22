@@ -25,8 +25,8 @@ import * as UserController from './controllers/UserController.js';
 import * as NewsController from './controllers/NewsController.js';
 import * as CompanyController from "./controllers/CompanyController.js";
 import * as IndexController from "./controllers/IndexController.js";
-import {create, getSeparateIndex, getYear} from "./controllers/IndexController.js";
 import * as AnswersController from "./controllers/AnswersController.js";
+import {getBranchIndex} from "./controllers/IndexController.js";
 
 mongoose
     .connect('mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority')
@@ -56,7 +56,9 @@ app.post('/companies', postCreateCompanyValidation, CompanyController.createComp
 
 
 app.get('/jointIndex/:year/:quarter', IndexController.getJointIndex);
-app.get('/separateIndex/:year/:quarter', IndexController.getSeparateIndex);
+app.get('/separateIndex/:year/:quarter', IndexController.getIndex);
+app.get('/regionIndex/:year/:quarter/:region', IndexController.getRegionIndex);
+app.get('/branchIndex/:year/:quarter/:branch', IndexController.getBranchIndex);
 app.post('/index/:year/:quarter', IndexController.create);
 
 app.post('/answers/:year/:quarter', AnswersController.createAnswer);

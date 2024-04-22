@@ -1,6 +1,9 @@
 import GeneralIndex from "../models/GeneralIndex.js";
 import AnswersScheme from "../models/Answers.js";
 import fs from "fs";
+import {getBranchNumber} from "./Mapping.js";
+import getBranchNumberreq from "express/lib/router/layer.js";
+import {login} from "./UserController.js";
 
 // export const getSeparateIndex = async (req, res) => {
 //     try {
@@ -58,7 +61,7 @@ function calculateJointIndex(leftRecord, rightRecord) {
     let innovationJoin = 0;
 
 
-    const recordSize = leftRecord.length;
+    const recordSize = leftRecord.length > rightRecord.length ? leftRecord.length : rightRecord.length;
 
     for (let i = 0; i < recordSize; i++) {
         const revenue = OptimismBlock(leftRecord[i].q1, rightRecord[i].q1);
@@ -96,6 +99,8 @@ function calculateJointIndex(leftRecord, rightRecord) {
         investmentJoin += answerInvestment;
         innovationJoin += answerInnovation;
     }
+
+    console.log(revenueJoin, sizeJoin, financeJoin, investmentJoin, innovationJoin)
 
     const index = (
         takeIndex(revenueIndexes, revenueJoin)
@@ -141,7 +146,7 @@ export const getJointIndex = async (req, res) => {
     }
 }
 
-function calculateSeparateIndex(leftRecord, rightRecord) {
+function calculateIndex(leftRecord, rightRecord) {
     const OptimismBlock = (a, b) => {
         return ((a === 1 ? 2 : (a === 2 ? 1 : 0)) + (b === 1 ? 2 : (b === 2 ? 1 : 0))) * 0.25;
     }
@@ -223,7 +228,7 @@ function calculateSeparateIndex(leftRecord, rightRecord) {
 
 }
 
-export const getSeparateIndex = async (req, res) => {
+export const getIndex = async (req, res) => {
     try {
         let leftYear = Number(req.params.year);
         let leftQuarter = Number(req.params.quarter);
@@ -240,8 +245,8 @@ export const getSeparateIndex = async (req, res) => {
         const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
         const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
 
-        const leftResult = calculateSeparateIndex(leftRecord, rightRecord);
-        const rightResult = calculateSeparateIndex(rightRecord, leftRecord);
+        const leftResult = calculateIndex(leftRecord, rightRecord);
+        const rightResult = calculateIndex(rightRecord, leftRecord);
 
         res.status(200).json({left: leftResult, right: rightResult});
     } catch (error) {
@@ -252,10 +257,12 @@ export const getSeparateIndex = async (req, res) => {
     }
 }
 
-export const getSeparateIndex = async (req, res) => {
+
+export const getRegionIndex = async (req, res) => {
     try {
         let leftYear = Number(req.params.year);
         let leftQuarter = Number(req.params.quarter);
+        const region = Number(req.params.region)
         let rightYear = 0;
         let rightQuarter = 0;
         if (leftQuarter === 4) {
@@ -266,13 +273,13 @@ export const getSeparateIndex = async (req, res) => {
             rightQuarter = leftQuarter + 1;
         }
 
-        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
-        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, region: region});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, region: region});
 
-        const leftResult = calculateSeparateIndex(leftRecord, rightRecord);
-        const rightResult = calculateSeparateIndex(rightRecord, leftRecord);
+        const result = calculateJointIndex(leftRecord, rightRecord);
 
-        res.status(200).json({left: leftResult, right: rightResult});
+        res.status(200).json(result);
+
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -280,6 +287,47 @@ export const getSeparateIndex = async (req, res) => {
         })
     }
 }
+
+
+
+export const getBranchIndex = async (req, res) => {
+    try {
+        let leftYear = Number(req.params.year);
+        let leftQuarter = Number(req.params.quarter);
+        const branch = getBranchNumber.get(req.params.branch.toString());
+        console.log(branch)
+        let rightYear = 0;
+        let rightQuarter = 0;
+        if (leftQuarter === 4) {
+            rightYear = leftYear + 1;
+            rightQuarter = 1;
+        } else {
+            rightYear = leftYear;
+            rightQuarter = leftQuarter + 1;
+        }
+
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, branch: { $in: branch }});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, branch: { $in: branch }});
+
+        // fs.writeFileSync('./target1.json', JSON.stringify(leftRecord));
+        // fs.writeFileSync('./target2.json', JSON.stringify(rightRecord))
+
+        // const leftResult = calculateIndex(leftRecord, rightRecord);
+        // const rightResult = calculateIndex(rightRecord, leftRecord);
+
+        const result = calculateJointIndex(leftRecord, rightRecord);
+        // res.status(200).json({left: leftResult, right: rightResult});
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить индекс'
+        })
+    }
+}
+
 
 export const create = async (req, res) => {
     try {
