@@ -27,15 +27,20 @@ import * as CompanyController from "./controllers/CompanyController.js";
 import * as IndexController from "./controllers/IndexController.js";
 import * as AnswersController from "./controllers/AnswersController.js";
 import * as ForumController from './controllers/ForumController.js';
+import * as MailController from './services/mail-service.js';
+import * as OfferController from './controllers/OfferController.js';
 import {getBranchIndex} from "./controllers/IndexController.js";
 import {
     createMessageForTopic,
     getAllMessagesFromTopic,
     getAllTopic
 } from "./controllers/ForumController.js";
+import {createOffer} from "./controllers/OfferController.js";
+
+const mongoUrl = 'mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority';
 
 mongoose
-    .connect('mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority')
+    .connect(mongoUrl)
     .then(() => console.log('DB ok'))
     .catch((err) => console.log('DB err', err))
 
@@ -51,6 +56,12 @@ app.post('/auth/login', loginValidation, UserController.login);
 app.post('/auth/register', registerValidation, UserController.register);
 app.get('/auth/me', checkAuth, UserController.getMe);
 
+//TODO нужно сделать проверку на администратора Владислав
+app.post('/announcement', MailController.createAnnouncement);
+
+//TODO Сделать обработку ошибки или создание запроса для администраторов
+app.post('/errors-and-offers', OfferController.createOffer)
+
 app.get('/posts', NewsController.getAll);
 app.get('/posts/:id', NewsController.getOne);
 app.post('/posts', postCreateValidation, NewsController.create);
@@ -58,6 +69,7 @@ app.post('/posts', postCreateValidation, NewsController.create);
 
 app.get('/companies',  CompanyController.getAllCompanies);
 app.get('/companies/:id',  CompanyController.getOneCompany);
+//TODO нужно сделать проверку на администратора Владислав
 app.post('/companies', postCreateCompanyValidation, CompanyController.createCompany);
 
 
@@ -68,13 +80,13 @@ app.get('/branchIndex/:year/:quarter/:branch', IndexController.getBranchIndex);
 app.get('/revenueIndex/:year/:quarter/:revenue', IndexController.getRevenueIndex);
 app.post('/index/:year/:quarter', IndexController.create);
 
-
+//TODO Нужно сделать форум
 app.post('/forum', checkAuth, ForumController.createTopic);
 app.get('/forum', checkAuth, ForumController.getAllTopic);
 app.post('/forum/:id', checkAuth, ForumController.createMessageForTopic);
 app.get('/forum/:id', checkAuth, ForumController.getAllMessagesFromTopic);
 
-
+//TODO нужно сделать проверку на администратора  Владислав
 app.post('/answers/:year/:quarter', AnswersController.createAnswer);
 
 app.get('/years', IndexController.getYear)

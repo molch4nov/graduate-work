@@ -1,4 +1,5 @@
 import NewsModel from '../models/News.js'
+import {startSendingEmails} from "../services/mail-service.js";
 
 export const create = async (req, res) => {
     try {
@@ -10,6 +11,8 @@ export const create = async (req, res) => {
         });
 
         const post = await doc.save();
+
+        await startSendingEmails(`${doc.title} - тема новой новости. Узнайте подробности!`, doc.shortContent);
 
         res.json(post);
     } catch (error) {
