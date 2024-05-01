@@ -1,9 +1,6 @@
 import GeneralIndex from "../models/GeneralIndex.js";
 import AnswersScheme from "../models/Answers.js";
-import fs from "fs";
 import {getBranchNumber} from "./Mapping.js";
-import getBranchNumberreq from "express/lib/router/layer.js";
-import {login} from "./UserController.js";
 
 // export const getSeparateIndex = async (req, res) => {
 //     try {
@@ -295,7 +292,6 @@ export const getBranchIndex = async (req, res) => {
         let leftYear = Number(req.params.year);
         let leftQuarter = Number(req.params.quarter);
         const branch = getBranchNumber.get(req.params.branch.toString());
-        console.log(branch)
         let rightYear = 0;
         let rightQuarter = 0;
         if (leftQuarter === 4) {
@@ -308,6 +304,43 @@ export const getBranchIndex = async (req, res) => {
 
         const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, branch: { $in: branch }});
         const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, branch: { $in: branch }});
+
+        // fs.writeFileSync('./target1.json', JSON.stringify(leftRecord));
+        // fs.writeFileSync('./target2.json', JSON.stringify(rightRecord))
+
+        // const leftResult = calculateIndex(leftRecord, rightRecord);
+        // const rightResult = calculateIndex(rightRecord, leftRecord);
+
+        const result = calculateJointIndex(leftRecord, rightRecord);
+        // res.status(200).json({left: leftResult, right: rightResult});
+
+        res.status(200).json(result);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить индекс'
+        })
+    }
+}
+
+export const getRevenueIndex = async (req, res) => {
+    try {
+        let leftYear = Number(req.params.year);
+        let leftQuarter = Number(req.params.quarter);
+        const revenue = Number(req.params.revenue);
+        let rightYear = 0;
+        let rightQuarter = 0;
+        if (leftQuarter === 4) {
+            rightYear = leftYear + 1;
+            rightQuarter = 1;
+        } else {
+            rightYear = leftYear;
+            rightQuarter = leftQuarter + 1;
+        }
+
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, revenue: { $in: revenue }});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, revenue: { $in: revenue }});
 
         // fs.writeFileSync('./target1.json', JSON.stringify(leftRecord));
         // fs.writeFileSync('./target2.json', JSON.stringify(rightRecord))
@@ -385,3 +418,5 @@ export const getYear = async (req, res) => {
         })
     }
 }
+
+

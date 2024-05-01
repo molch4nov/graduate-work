@@ -26,7 +26,13 @@ import * as NewsController from './controllers/NewsController.js';
 import * as CompanyController from "./controllers/CompanyController.js";
 import * as IndexController from "./controllers/IndexController.js";
 import * as AnswersController from "./controllers/AnswersController.js";
+import * as ForumController from './controllers/ForumController.js';
 import {getBranchIndex} from "./controllers/IndexController.js";
+import {
+    createMessageForTopic,
+    getAllMessagesFromTopic,
+    getAllTopic
+} from "./controllers/ForumController.js";
 
 mongoose
     .connect('mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority')
@@ -59,7 +65,15 @@ app.get('/jointIndex/:year/:quarter', IndexController.getJointIndex);
 app.get('/separateIndex/:year/:quarter', IndexController.getIndex);
 app.get('/regionIndex/:year/:quarter/:region', IndexController.getRegionIndex);
 app.get('/branchIndex/:year/:quarter/:branch', IndexController.getBranchIndex);
+app.get('/revenueIndex/:year/:quarter/:revenue', IndexController.getRevenueIndex);
 app.post('/index/:year/:quarter', IndexController.create);
+
+
+app.post('/forum', checkAuth, ForumController.createTopic);
+app.get('/forum', checkAuth, ForumController.getAllTopic);
+app.post('/forum/:id', checkAuth, ForumController.createMessageForTopic);
+app.get('/forum/:id', checkAuth, ForumController.getAllMessagesFromTopic);
+
 
 app.post('/answers/:year/:quarter', AnswersController.createAnswer);
 
