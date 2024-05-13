@@ -129,8 +129,8 @@ export const getJointIndex = async (req, res) => {
             rightQuarter = leftQuarter + 1;
         }
 
-        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
-        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, current: true});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, current: false});
 
         const result = calculateJointIndex(leftRecord, rightRecord);
 
@@ -239,8 +239,8 @@ export const getIndex = async (req, res) => {
             rightQuarter = leftQuarter + 1;
         }
 
-        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter});
-        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter});
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, current: true});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, current: false});
 
         const leftResult = calculateIndex(leftRecord, rightRecord);
         const rightResult = calculateIndex(rightRecord, leftRecord);
@@ -270,8 +270,8 @@ export const getRegionIndex = async (req, res) => {
             rightQuarter = leftQuarter + 1;
         }
 
-        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, region: region});
-        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, region: region});
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, region: region, current: true});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, region: region, current: false});
 
         const result = calculateJointIndex(leftRecord, rightRecord);
 
@@ -302,8 +302,8 @@ export const getBranchIndex = async (req, res) => {
             rightQuarter = leftQuarter + 1;
         }
 
-        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, branch: { $in: branch }});
-        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, branch: { $in: branch }});
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, branch: { $in: branch }, current: true});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, branch: { $in: branch }, current: false});
 
         // fs.writeFileSync('./target1.json', JSON.stringify(leftRecord));
         // fs.writeFileSync('./target2.json', JSON.stringify(rightRecord))
@@ -339,8 +339,8 @@ export const getRevenueIndex = async (req, res) => {
             rightQuarter = leftQuarter + 1;
         }
 
-        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, revenue: { $in: revenue }});
-        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, revenue: { $in: revenue }});
+        const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, revenue: { $in: revenue }, current: true});
+        const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, revenue: { $in: revenue }, current: false});
 
         // fs.writeFileSync('./target1.json', JSON.stringify(leftRecord));
         // fs.writeFileSync('./target2.json', JSON.stringify(rightRecord))
@@ -419,4 +419,23 @@ export const getYear = async (req, res) => {
     }
 }
 
+export const changeIndex = async (req, res) => {
+    try {
+        let records = await AnswersScheme.find({year: 2024});
+
+        await Promise.all(records.map(async (record) => {
+            record.current = false;
+            await record.save();
+        }));
+
+        res.status(200).json({
+            message: 'Индексы успешно обновлены'
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось обновить индексы'
+        });
+    }
+}
 

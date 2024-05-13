@@ -29,7 +29,7 @@ import * as AnswersController from "./controllers/AnswersController.js";
 import * as ForumController from './controllers/ForumController.js';
 import * as MailController from './services/mail-service.js';
 import * as OfferController from './controllers/OfferController.js';
-import {getBranchIndex} from "./controllers/IndexController.js";
+import {changeIndex, getBranchIndex} from "./controllers/IndexController.js";
 import {
     createMessageForTopic,
     getAllMessagesFromTopic,
@@ -79,8 +79,9 @@ app.get('/regionIndex/:year/:quarter/:region', IndexController.getRegionIndex);
 app.get('/branchIndex/:year/:quarter/:branch', IndexController.getBranchIndex);
 app.get('/revenueIndex/:year/:quarter/:revenue', IndexController.getRevenueIndex);
 app.post('/index/:year/:quarter', IndexController.create);
+app.get('/lalala', IndexController.changeIndex)
 
-//TODO Нужно сделать форум
+
 app.post('/forum', checkAuth, ForumController.createTopic);
 app.get('/forum', checkAuth, ForumController.getAllTopic);
 app.post('/forum/:id', checkAuth, ForumController.createMessageForTopic);

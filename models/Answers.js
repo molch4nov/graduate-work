@@ -13,6 +13,10 @@ const AnswersScheme = new mongoose.Schema({
             type: Number,
             required: true,
         },
+        current: {
+            type: Boolean,
+            required: true,
+        },
         q1: {
             type: Number,
             required: true,
