@@ -78,8 +78,12 @@ app.get('/separateIndex/:year/:quarter', IndexController.getIndex);
 app.get('/regionIndex/:year/:quarter/:region', IndexController.getRegionIndex);
 app.get('/branchIndex/:year/:quarter/:branch', IndexController.getBranchIndex);
 app.get('/revenueIndex/:year/:quarter/:revenue', IndexController.getRevenueIndex);
-app.post('/index/:year/:quarter', IndexController.create);
-app.get('/lalala', IndexController.changeIndex)
+app.get('/generalIndex/:year/:quarter', IndexController.getGeneralIndex);
+app.get('/generalBranchIndex/:year/:quarter', IndexController.getGeneralBranchIndex);
+app.get('/years', IndexController.getYear);
+app.get('/quarters/:year', IndexController.getQuarter);
+app.post('/index/:year/:quarter/:current', IndexController.create);
+app.get('/lalala', IndexController.changeIndex);
 
 
 app.post('/forum', checkAuth, ForumController.createTopic);
@@ -88,7 +92,7 @@ app.post('/forum/:id', checkAuth, ForumController.createMessageForTopic);
 app.get('/forum/:id', checkAuth, ForumController.getAllMessagesFromTopic);
 
 //TODO нужно сделать проверку на администратора  Владислав
-app.post('/answers/:year/:quarter', AnswersController.createAnswer);
+app.post('/answers/:year/:quarter/:current', AnswersController.createAnswer);
 
 app.get('/years', IndexController.getYear)
 
