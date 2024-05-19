@@ -5,8 +5,9 @@ const { Topic} = ForumModels;
 export const createTopic = async (req, res) => {
     try {
         const title = req.body.title;
+        const author = req.body.author;
 
-        const newTopic = new Topic({ title: title });
+        const newTopic = new Topic({ title: title, author: author });
         const record = await newTopic.save();
 
         res.json(record);
@@ -22,9 +23,7 @@ export const getAllTopic = async (req, res) => {
     try {
         const allTopics = await Topic.find();
 
-        res.json(allTopics.map(doc => {
-            return {"_id": doc['_id'], "title": doc['title']}
-        }));
+        res.json(allTopics);
     } catch (error) {
         console.log(error);
         res.status(500).json({
@@ -39,8 +38,10 @@ export const createMessageForTopic = async (req, res) => {
         const topic = await Topic.findOne({_id: topicId});
 
         const message = req.body.message;
+        const author = req.body.author;
+        const date = new Date();
 
-        topic['messages'].push(message);
+        topic['messages'].push({message: message, author: author, date: date});
 
         const record = await topic.save();
 

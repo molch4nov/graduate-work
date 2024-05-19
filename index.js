@@ -79,7 +79,7 @@ app.get('/regionIndex/:year/:quarter/:region', IndexController.getRegionIndex);
 app.get('/branchIndex/:year/:quarter/:branch', IndexController.getBranchIndex);
 app.get('/revenueIndex/:year/:quarter/:revenue', IndexController.getRevenueIndex);
 app.post('/index/:year/:quarter', IndexController.create);
-app.get('/lalala', IndexController.changeIndex)
+app.get('/lalala', IndexController.changeIndex);
 
 
 app.post('/forum', checkAuth, ForumController.createTopic);
