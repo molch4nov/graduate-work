@@ -23,7 +23,14 @@ export const getAllTopic = async (req, res) => {
     try {
         const allTopics = await Topic.find();
 
-        res.json(allTopics);
+        res.json(allTopics.map(topic => {
+            return {
+                id: topic._id,
+                title: topic.title,
+                author: topic.author,
+                date: topic.date
+            }
+        }));
     } catch (error) {
         console.log(error);
         res.status(500).json({
