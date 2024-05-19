@@ -29,6 +29,14 @@ const GeneralIndexSchema = new mongoose.Schema({
             type: Number,
             required: true,
         },
+        current: {
+            type: Boolean,
+            required: true,
+        },
+        type: {
+            type: String,
+            required: true,
+        },
         year: {
             type: Number,
             required: true,

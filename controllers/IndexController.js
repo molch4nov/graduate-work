@@ -1,6 +1,8 @@
 import GeneralIndex from "../models/GeneralIndex.js";
 import AnswersScheme from "../models/Answers.js";
 import {getBranchNumber} from "./Mapping.js";
+import YearScheme from "../models/Year.js";
+import Quarter from "../models/Quarter.js";
 
 // export const getSeparateIndex = async (req, res) => {
 //     try {
@@ -152,7 +154,11 @@ function calculateIndex(leftRecord, rightRecord) {
 
 
     const Optimism = (a) => {return a > 4 ? 0 : a > 2 ? 0.5 : 1};
+
+
     const votedBlock  = (a, b) => {return (a === 99 || b === 99) ? 0 : 1};
+
+    
     const voted  = (a) => {return a === 99 ? 0 : 1};
 
     let revenueIndexes = [];
@@ -304,7 +310,7 @@ export const getBranchIndex = async (req, res) => {
 
         const leftRecord = await AnswersScheme.find({year: leftYear, quarter: leftQuarter, branch: { $in: branch }, current: true});
         const rightRecord = await AnswersScheme.find({year: rightYear, quarter: rightQuarter, branch: { $in: branch }, current: false});
-
+        
         // fs.writeFileSync('./target1.json', JSON.stringify(leftRecord));
         // fs.writeFileSync('./target2.json', JSON.stringify(rightRecord))
 
@@ -312,6 +318,21 @@ export const getBranchIndex = async (req, res) => {
         // const rightResult = calculateIndex(rightRecord, leftRecord);
 
         const result = calculateJointIndex(leftRecord, rightRecord);
+
+        const doc = new GeneralIndex({
+            revenue: result.revenue,
+            size: result.size,
+            finance: result.finance,
+            investment: result.investment,
+            innovation: result.innovation,
+            summaryIndex: result.index,
+            type: req.params.branch.toString(),
+            current: true,
+            year: leftYear,
+            quarter: leftQuarter,
+        });
+
+        const record = await doc.save();
         // res.status(200).json({left: leftResult, right: rightResult});
 
         res.status(200).json(result);
@@ -366,6 +387,7 @@ export const create = async (req, res) => {
     try {
         const year = req.params.year;
         const quarter = req.params.quarter;
+        const current = Number(req.params.current) === 1 ? true : false;
         const doc = new GeneralIndex({
             revenue: req.body.revenue,
             size: req.body.size,
@@ -373,6 +395,8 @@ export const create = async (req, res) => {
             investment: req.body.investment,
             innovation: req.body.innovation,
             summaryIndex: req.body.summaryIndex,
+            type: req.body.type,
+            current: current,
             quarter: quarter,
             year: year,
         });
@@ -388,33 +412,94 @@ export const create = async (req, res) => {
     }
 }
 
-
-
-export const getYear = async (req, res) => {
+export const getGeneralIndex = async (req, res) => {
     try {
-        const record
-            = await GeneralIndex.aggregate([
-            { $group: { _id: null, uniqueYears: { $addToSet: 'year' } } },
-        ], (err, result) => {
-            if (err) {
-                console.error('Ошибка при выполнении запроса:', err);
-            } else {
-                const uniqueYears = result[0].uniqueYears;
-                console.log('Уникальные года в коллекции:', uniqueYears);
-            }
-        });
-        if (!record) {
-            return res.status(404).json({
-                message: 'Индекс не найден или не существует.'
-            })
-        }
-
-        res.json(record);
-
+        const quarter = Number(req.params.quarter);
+        const year = Number(req.params.year);
+        const type = String(req.params.type);
+        const record = await GeneralIndex.find({year: year, quarter: quarter, type: type});
+        res.status(200).json(record);
     } catch (error) {
         console.log(error);
         res.status(500).json({
-            message: 'Не удалось создать запись об индексе.',
+            message: 'Не удалось получить индексы'
+        })
+    }
+}
+
+export const getGeneralBranchIndex = async (req, res) => {
+    try {
+        const list = ['Сервис', 
+        'Строительство', 
+        'Промышленность', 
+        'Сельское хозяйство',
+        'Инфраструктура'];
+        const quarter = Number(req.params.quarter);
+        const year = Number(req.params.year);
+        let answerBranch = [];
+        const answer = await Promise.all(list.map(async item => {
+            return (await GeneralIndex.find({year: year, quarter: quarter, type: item}))[0];
+        }))
+        
+        res.status(200).json(answer);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить индексы'
+        })
+    }
+}
+
+// export const getYear = async (req, res) => {
+//     try {
+//         const record
+//             = await GeneralIndex.aggregate([
+//             { $group: { _id: null, uniqueYears: { $addToSet: 'year' } } },
+//         ], (err, result) => {
+//             if (err) {
+//                 console.error('Ошибка при выполнении запроса:', err);
+//             } else {
+//                 const uniqueYears = result[0].uniqueYears;
+//                 console.log('Уникальные года в коллекции:', uniqueYears);
+//             }
+//         });
+//         if (!record) {
+//             return res.status(404).json({
+//                 message: 'Индекс не найден или не существует.'
+//             })
+//         }
+
+//         res.json(record);
+
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             message: 'Не удалось создать запись об индексе.',
+//         })
+//     }
+// }
+
+export const getYear = async (req, res) => {
+    try {
+        const record = await YearScheme.find();
+        res.status(200).json(record);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить годы'
+        })
+    }
+}
+
+export const getQuarter = async (req, res) => {
+    try {
+        const year = Number(req.params.year);
+        const record = await Quarter.find({year: year});
+        res.status(200).json(record);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось получить кварталы'
         })
     }
 }
