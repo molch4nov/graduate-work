@@ -89,9 +89,9 @@ app.get('/lalala', IndexController.changeIndex);
 
 
 app.post('/forum', checkAuth, ForumController.createTopic);
-app.get('/forum', checkAuth, ForumController.getAllTopic);
+app.get('/forum', ForumController.getAllTopic);
 app.post('/forum/:id', checkAuth, ForumController.createMessageForTopic);
-app.get('/forum/:id', checkAuth, ForumController.getAllMessagesFromTopic);
+app.get('/forum/:id', ForumController.getAllMessagesFromTopic);
 
 //TODO for admin panel
 app.delete('/forum/:id', checkAdmin, ForumController.removeOneMessageFromTopic);
