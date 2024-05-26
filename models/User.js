@@ -16,6 +16,10 @@ const UserSchema = new mongoose.Schema({
     },
     avatarUrl: String,
     subscription: Boolean,
+    role: {
+        type: String,
+        default: 'authorized'
+    }
 },
 {
     timestamps: true,

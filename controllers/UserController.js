@@ -4,8 +4,6 @@ import UserModel from '../models/User.js';
 
 import { validationResult } from 'express-validator';
 
-
-
 export const register = async (req, res) => {
     try {
         const errors = validationResult(req);
@@ -108,3 +106,56 @@ export const getMe = async (req, res) => {
         })
     }
 }
+
+export const getFullList = async (req, res) => {
+    try {
+        const users = await UserModel.find();
+
+        if (!users) {
+            return res.status(400).json({
+                message: 'Пользователи не найден',
+            });
+        }
+
+        res.status(200).json({
+            ...users
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось авторизоваться',
+        })
+    }
+}
+
+export const putOneRow = async (req, res) => {
+    try {
+        const id = req.params.id.toString();
+        const user = await UserModel.findOne({_id: id});
+
+        if (!user) {
+            return res.status(400).json({
+                message: 'Пользователи не найден',
+            });
+        }
+
+        const fullName = req.body.fullName;
+        const email = req.body.email;
+        const role = req.body.role;
+
+        user.fullName = fullName;
+        user.email = email;
+        user.role = role;
+
+        const record = await user.save();
+
+        res.status(200).json(record);
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: 'Не удалось авторизоваться',
+        })
+    }
+}
+

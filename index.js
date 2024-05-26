@@ -7,6 +7,7 @@ import {
     postCreateCompanyValidation
 } from './validations/validations.js';
 import checkAuth from './utils/chechAuth.js';
+import checkAdmin from './utils/checkAdmin.js';
 import cors from 'cors';
 
 import swaggerUi from 'swagger-ui-express';
@@ -27,6 +28,7 @@ import * as CompanyController from "./controllers/CompanyController.js";
 import * as IndexController from "./controllers/IndexController.js";
 import * as AnswersController from "./controllers/AnswersController.js";
 import * as ForumController from './controllers/ForumController.js';
+import * as FileController from './controllers/FileController.js';
 import * as MailController from './services/mail-service.js';
 import * as OfferController from './controllers/OfferController.js';
 import {changeIndex, getBranchIndex} from "./controllers/IndexController.js";
@@ -90,6 +92,14 @@ app.post('/forum', checkAuth, ForumController.createTopic);
 app.get('/forum', checkAuth, ForumController.getAllTopic);
 app.post('/forum/:id', checkAuth, ForumController.createMessageForTopic);
 app.get('/forum/:id', checkAuth, ForumController.getAllMessagesFromTopic);
+
+//TODO for admin panel
+app.delete('/forum/:id', checkAdmin, ForumController.removeOneMessageFromTopic);
+app.delete('/forum/topic/:id', checkAdmin, ForumController.removeOneTopic);
+app.get('/users-list', checkAdmin, UserController.getFullList);
+app.put('/user-list/:id', checkAdmin, UserController.putOneRow);
+app.post('/create-file/:year/:quarter', checkAdmin, FileController.createNewRow);
+
 
 //TODO нужно сделать проверку на администратора  Владислав
 app.post('/answers/:year/:quarter/:current', AnswersController.createAnswer);

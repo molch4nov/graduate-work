@@ -6,8 +6,10 @@ const topicSchema = new mongoose.Schema({
         required: true
     },
     messages: [{
-        type: String,
-        required: true,
+        message: {
+            type: String,
+            required: true
+        },
         author: {
             type: String,
             required: true
