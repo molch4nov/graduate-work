@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 import UserModel from '../models/User.js';
 
 import { validationResult } from 'express-validator';
+import log from "node-file-logger";
+
+const serviceName = 'UserController';
 
 export const register = async (req, res) => {
     try {
@@ -41,6 +44,7 @@ export const register = async (req, res) => {
         });
     } catch (err) {
         console.log(err);
+        log.Error(`${error}`, 'UserService', 'register');
         res.status(500).json({
             message: 'Не удалось зарегестрироваться'
         })
@@ -80,6 +84,7 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'UserService', 'login');
         res.status(500).json({
             message: 'Не удалось авторизоваться',
         })
@@ -101,6 +106,7 @@ export const getMe = async (req, res) => {
         res.json(userData);
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'UserService', 'getMe');
         res.status(500).json({
             message: 'Не удалось зарегестрироваться'
         })
@@ -122,6 +128,7 @@ export const getFullList = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'UserService', 'getFullList');
         res.status(500).json({
             message: 'Не удалось авторизоваться',
         })
@@ -153,6 +160,7 @@ export const putOneRow = async (req, res) => {
 
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'UserService', 'putOneRow');
         res.status(500).json({
             message: 'Не удалось авторизоваться',
         })

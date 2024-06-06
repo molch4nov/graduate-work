@@ -38,7 +38,9 @@ import {
     getAllTopic
 } from "./controllers/ForumController.js";
 import {createOffer} from "./controllers/OfferController.js";
-
+import fileLogger from "node-file-logger";
+import log from "node-file-logger";
+import promMid from 'express-prometheus-middleware';
 const mongoUrl = 'mongodb+srv://ytwotvladoks:mLi-D7V-TiM-kWn@blogpost.nwj3j2l.mongodb.net/blog?retryWrites=true&w=majority';
 
 mongoose
@@ -49,6 +51,38 @@ mongoose
 const app = express();
 app.use(cors(corsOptions))
 app.use(express.json());
+
+app.use(promMid({
+    metricsPath: '/metrics',
+    collectDefaultMetrics: true,
+    requestDurationBuckets: [0.1, 0.5, 1, 1.5],
+    requestLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
+    responseLengthBuckets: [512, 1024, 5120, 10240, 51200, 102400],
+}));
+
+
+
+const options = {
+    timeZone: 'Russia/Moscow',
+    folderPath: './logs/',
+    dateBasedFileNaming: true,
+    // Required only if dateBasedFileNaming is set to false
+    fileName: 'All_Logs',
+    // Required only if dateBasedFileNaming is set to true
+    fileNamePrefix: 'Logs_',
+    fileNameSuffix: '',
+    fileNameExtension: '.log',
+
+    dateFormat: 'YYYY-MM-DD',
+    timeFormat: 'HH:mm:ss.SSS',
+    logLevel: 'debug',
+    onlyFileLogging: true
+}
+
+// Note: If you set dateBasedFileNaming to false, then a log file will be created at the folder path with the provided fileName.
+// If set to true then a logfile will be created with the name <fileName> provided in the options
+
+log.SetUserOptions(options);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
@@ -109,7 +143,7 @@ app.get('/years', IndexController.getYear)
 
 app.use('/api-docs', swaggerUi.serve)
 app.get('/api-docs', swaggerUi.setup(swaggerDocument))
-app.listen(4444, (error) => {
+app.listen(4445, (error) => {
     if (error) {
         return console.log(error);
     } 

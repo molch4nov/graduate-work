@@ -1,5 +1,6 @@
 import AnswersScheme from "../models/Answers.js";
 import fs from "fs";
+import log from "node-file-logger";
 
 export const createAnswer = async (req, res) => {
     try {
@@ -28,6 +29,7 @@ export const createAnswer = async (req, res) => {
         res.status(200);
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'AnswersService', 'createAnswer');
         res.status(500).json({
             message: 'Не удалось создать запись об индексе.',
         })

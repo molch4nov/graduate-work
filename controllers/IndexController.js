@@ -3,6 +3,7 @@ import AnswersScheme from "../models/Answers.js";
 import {getBranchNumber} from "./Mapping.js";
 import YearScheme from "../models/Year.js";
 import Quarter from "../models/Quarter.js";
+import log from "node-file-logger";
 
 // export const getSeparateIndex = async (req, res) => {
 //     try {
@@ -139,6 +140,7 @@ export const getJointIndex = async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'getJointIndex');
         res.status(500).json({
             message: 'Не удалось получить индекс'
         })
@@ -227,8 +229,6 @@ function calculateIndex(leftRecord, rightRecord) {
         innovation: takeIndex(innovationIndexes, innovationJoin),
         index: index
     };
-
-
 }
 
 export const getIndex = async (req, res) => {
@@ -254,6 +254,7 @@ export const getIndex = async (req, res) => {
         res.status(200).json({left: leftResult, right: rightResult});
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'getIndex');
         res.status(500).json({
             message: 'Не удалось получить индекс'
         })
@@ -285,6 +286,7 @@ export const getRegionIndex = async (req, res) => {
 
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'getRegionIndex');
         res.status(500).json({
             message: 'Не удалось получить индекс'
         })
@@ -339,6 +341,7 @@ export const getBranchIndex = async (req, res) => {
 
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'getBranchIndex');
         res.status(500).json({
             message: 'Не удалось получить индекс'
         })
@@ -376,6 +379,7 @@ export const getRevenueIndex = async (req, res) => {
 
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'getRevenueIndex');
         res.status(500).json({
             message: 'Не удалось получить индекс'
         })
@@ -406,6 +410,7 @@ export const create = async (req, res) => {
         res.json(record);
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'create');
         res.status(500).json({
             message: 'Не удалось создать запись об индексе.',
         })
@@ -421,6 +426,7 @@ export const getGeneralIndex = async (req, res) => {
         res.status(200).json(record);
     } catch (error) {
         console.log(error);
+        log.Error(`${error}`, 'IndexService', 'getGeneralIndex');
         res.status(500).json({
             message: 'Не удалось получить индексы'
         })
